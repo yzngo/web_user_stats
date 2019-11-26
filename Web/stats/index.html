@@ -1,0 +1,307 @@
+﻿<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>Playfab统计分析</title>
+    <link rel="stylesheet" href="index.css" />
+    <script type='text/javascript' language="javascript" src='jquery.js'></script>
+    <script type='text/javascript' language='javascript' src='echarts.min.js'></script>
+  </head>
+
+  <body>
+
+
+    <!--layout-->
+      <!-- <div class="tabBtns" >
+          <div class="tab-btn" data-event="event_country">国籍统计</div>
+          <div class="tab-btn" data-event="event_platform">平台统计</div>
+          <div class="tab-btn" data-event="consume_c">总计获得金币</div>
+          <div class="tab-btn" data-event="test1">消耗金币数量统计</div>
+          <div class="tab-btn" data-event="test2">消耗金币数量统计</div>
+      </div> -->
+
+      <table border="1">
+          <tr>
+          <td>ui点击统计</td>
+          <td>关卡信息统计</td>
+          <td>玩家信息</td>
+          <td>玩家数据</td>
+          </tr>
+
+          <tr>
+          <td>              
+            <select id="uistats" > 
+              <option value="ui_stats" param0="comment" >评价comment统计</option>
+              <option value="ui_stats" param0="signin" >签到signin统计</option>
+              <option value="ui_stats" param0="settlement" >结算settlement统计</option>
+              <option value="ui_stats" param0="freecash" >免费金币freecash统计</option>
+              <option value="ui_stats" param0="advertising" >广告页advertising统计</option>
+              <option value="ui_stats" param0="giftbox" >免费礼包giftbox统计</option>
+            </select>
+          </td>
+          <td>
+              <select id="levelstats" > 
+                  <option value="level_stats" param0="endless" param1="level">无尽关卡统计</option>
+                  <option value="level_stats" param0="endless" param1="player">无尽车辆使用统计</option>
+                  <option value="level_stats" param0="mission" param1="level" >生涯关卡统计</option>
+                  <option value="level_stats" param0="mission" param1="player" >生涯车辆使用统计</option>
+                  <option value="level_stats" param0="challenge" param1="level" >挑战关卡统计</option>
+                  <option value="level_stats" param0="challenge" param1="player">挑战车辆使用统计</option>
+                  <option value="level_car_stats" param0="all" param1="player" >关卡所有车辆使用统计</option>
+                </select>
+          </td>
+          <td>
+              <select id="userstats" > 
+                  <option value="user_stats" param0="CountryCode" >玩家国家分布</option>
+                  <option value="user_stats" param0="ContinentCode" >玩家大洲分布</option>
+                  <option value="user_stats" param0="Platform" >玩家平台分布</option>
+                </select>
+          </td>
+          <td>
+              <select id="userdata" > 
+                  <option value="user_data_enum" param0="last_use_control" >操作方式</option>
+                  <option value="user_data_enum" param0="last_use_throttle" >加速方式</option>
+                  <option value="user_data_enums" param0="last_use_car" >最后使用车辆</option>
+                  <option value="user_data_coin" param0="get_coin_total" >获得金币总数</option>
+                  <option value="user_data_coin" param0="cost_coin_total" >消费金币总数</option>
+                  <option value="user_data_coin" param0="cost_coin_forcar_total" >买车消费金币总数</option>
+                </select>
+          </td>
+          </tr>
+          </table>
+
+          <br><br>
+
+      <table border="1">
+      <tr>
+          <td>图表</td>
+          <td>国家</td>
+          <td>日期</td>
+          <td>版本</td>
+          <td>平台</td>
+      </tr>
+      <tr>
+          <td><select  id="opt-type" οnchange="changetype()"></select></td>
+          <td><select  id="opt-country" οnchange="changecountry()"><option>ALL</option></select></td>
+          <td><select  id="opt-date" οnchange="changedate()"><option>ALL</option></select></td>
+          <td><select  id="opt-version" οnchange="changeversion()"><option>ALL</option></select></td>
+          <td><select  id="opt-platform" οnchange="changeplatform()"><option>ALL</option></select></td>
+      </tr>
+      </table>
+
+      <div id="chats" class ="chartWrap"></div>
+
+      <table border="1">
+        <tr>
+          <td>操作方式:   </td>
+          <td>1: 触控 2: 重力 3: 模拟</td>
+        </tr>
+        <tr>
+            <td>加速方式:   </td>
+            <td>1: 自动 2: 手动</td>
+          </tr>
+      </table>
+      <br><br><br><br><br><br>
+    <script type="text/javascript">
+
+      var $tabBtns = $('.tabBtns .tab-btn');
+      var $optionBtns = $('.optionBtns .option-btn');
+      var $tabContents = $('#tabContents .tab-content');
+
+      var myChart = echarts.init(document.getElementById('chats'));
+      var typeSelect = document.getElementById("opt-type");
+      var countrySelect = document.getElementById("opt-country");
+      var dateSelect = document.getElementById("opt-date");
+      var versionSelect = document.getElementById("opt-version");
+      var platformSelect = document.getElementById("opt-platform");
+
+      // enum option
+      var enumType = [ "bar", "line", "pie" ];
+      var enumCountry;
+      var enumVersion;
+      var enumPlatform;
+      var enumDate = [ 3, 7, 10, 30 ];
+
+      // current parameter
+      var curType = "bar";
+      var curCountry = "ALL";
+      var curPlatform = "ALL";
+      var curVersion = "ALL";
+      var curDate = "ALL";
+      var curEvent = "ui_stats";
+      var curText = "评论comment统计";
+      var curParam0 = "comment";
+      var curParam1 = "";
+      var chartData = "";
+
+      GetOptionData();
+
+      //set event
+      $('.tabBtns .tab-btn').on('click', function (e) {
+        curEvent = this.dataset.event;
+        curText = $(this).text();
+        GetData(); 
+      });
+
+      $("#uistats").on("change", function(e){
+        curEvent = $(this).find("option:Selected").val();
+        curText = $(this).find("option:Selected").text();
+        curParam0 = $(this).find("option:Selected").attr("param0");
+        GetData();
+      });
+
+      $("#levelstats").on("change", function(e){
+        curEvent = $(this).find("option:Selected").val();
+        curText = $(this).find("option:Selected").text();
+        curParam0 = $(this).find("option:Selected").attr("param0");
+        curParam1 = $(this).find("option:Selected").attr("param1");
+        GetData();
+      });
+
+      $("#userstats").on("change", function(e){
+        curEvent = $(this).find("option:Selected").val();
+        curText = $(this).find("option:Selected").text();
+        curParam0 = $(this).find("option:Selected").attr("param0");
+        GetData();
+      });
+
+      $("#userdata").on("change", function(e){
+        curEvent = $(this).find("option:Selected").val();
+        curText = $(this).find("option:Selected").text();
+        curParam0 = $(this).find("option:Selected").attr("param0");
+        GetData();
+      });
+
+      //set option
+      $("#opt-type").on("change", function(e){
+        curType = $(this).find("option:Selected").val();
+        if(chartData != ""){
+          chartData.series[0].type = curType;
+          ShowChat();
+        }
+      });
+
+      $("#opt-country").on("change", function(e){
+        curCountry = $(this).find("option:Selected").val();
+        GetData();
+      });
+
+      $("#opt-date").on("change", function(e){
+        curDate = $(this).find("option:Selected").val();
+        GetData();
+      });
+
+      $("#opt-version").on("change", function(e){
+        curVersion = $(this).find("option:Selected").val();
+        GetData();
+      });
+
+      $("#opt-platform").on("change", function(e){
+        curPlatform = $(this).find("option:Selected").val();
+        GetData();
+      });
+
+
+      function GetData(){
+        var param0 = {
+          event: curEvent,
+          text: curText,
+          type: curType,
+          country: curCountry,
+          platform: curPlatform,
+          version: curVersion,
+          date: curDate,
+          param0: curParam0,
+          param1: curParam1
+        };
+        $.ajax({
+            async: true , 
+            url: 'getdata.lua',
+            type: 'POST',
+            timeout: 20000,
+            data: JSON.stringify(param0),
+            contentType:"application/json",
+            dataType: "json",
+
+            complete: function( jqXHR, textStatus ){
+              chartData = JSON.parse(jqXHR.responseText);
+              ShowChat();
+            },
+          });
+      };
+
+      function GetOptionData(){
+        $.ajax({
+          async: true,
+          url: 'getoption.lua',
+          type: 'GET',
+          timeout: 20000,
+          data:{},
+          contentType:"application/json",
+          complete: function( jqXHR, textStatus ){
+            enumCountry = JSON.parse(jqXHR.responseText).country;
+            enumVersion = JSON.parse(jqXHR.responseText).version;
+            enumPlatform = JSON.parse(jqXHR.responseText).platform;
+            changecountry();
+            changeversion();
+            changetype();
+            changedate();
+            changeplatform();
+            GetData();
+          }
+        })
+      }
+
+      function ShowChat(){
+        myChart.setOption(chartData );
+      }
+
+      function changetype(){
+          typeSelect.options.length = 0;
+          for( var x = 0; x < enumType.length; x++ ){
+            var opt = document.createElement("option");
+            opt.innerHTML=enumType[x];
+            typeSelect.appendChild( opt );
+          }
+      }
+
+      function changecountry(){
+        countrySelect.options.length = 1;
+        for( var x = 0; x < enumCountry.length; x++ ){
+          var opt = document.createElement("option");
+          opt.innerHTML=enumCountry[x];
+          countrySelect.appendChild( opt );
+        }
+      }
+
+      function changedate(){
+        dateSelect.options.length = 1;
+        for( var x = 0; x < enumDate.length; x++ ){
+          var opt = document.createElement("option");
+          opt.innerHTML=enumDate[x];
+          dateSelect.appendChild( opt );
+        }
+      }
+
+      function changeversion(){
+        versionSelect.options.length = 1;
+        for( var x = 0; x < enumVersion.length; x++ ){
+          var opt = document.createElement("option");
+          opt.innerHTML=enumVersion[x];
+          versionSelect.appendChild( opt );
+        }
+      }
+
+      function changeplatform(){
+        platformSelect.options.length = 1;
+        for( var x = 0; x < enumPlatform.length; x++ ){
+          var opt = document.createElement("option");
+          opt.innerHTML=enumPlatform[x];
+          platformSelect.appendChild( opt );
+        }
+      }
+
+  </script>
+  </body>
+</html>

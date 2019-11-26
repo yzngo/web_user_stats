@@ -1,0 +1,37 @@
+.tabBtns{
+  display:flex;
+  flex-wrap:wrap;
+  width: 90%;
+}
+.tab-btn{
+  display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 16px;
+  
+  width:200px;
+  height:40px;
+  background:#079ff6;
+  border-radius:8px;
+  color:#fff;
+  cursor: pointer;
+}
+.chartWrap{
+  width: 90%;
+  height: 600px;
+  margin:20px;
+  margin-top:50px;
+}
+.option-btn{
+  display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 16px;
+  
+  width:90px;
+  height:30px;
+  background:#49474b;
+  border-radius:8px;
+  color:#fff;
+  cursor: pointer;
+}
