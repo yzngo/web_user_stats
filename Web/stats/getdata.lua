@@ -24,42 +24,38 @@ if date == "ALL" then
     date = 30;
 end
 
---[[
-res:ntuples() - Returns the number of rows (tuples) in the query result.
---]]
 local sqlstr = "";
 if event == "ui_stats" then
-    sqlstr = sqlstr..GetSQLBasisString( "action", "uistats", version, country, platform );
-    sqlstr = sqlstr..[[  and "page"=$5::varchar ]];
-elseif event == "level_stats" then
-    sqlstr = sqlstr..GetSQLBasisString( param1, "levelstats", version, country, platform );
-    sqlstr = sqlstr..[[  and "mode"=$5::varchar ]];
-elseif event == "level_car_stats" then
-    sqlstr = sqlstr..GetSQLBasisString( param1, "levelstats", version, country, platform );
-elseif event == "user_stats" then
-    version = "ALL"
-    sqlstr = sqlstr..GetSQLBasisString( param0, "userinfo", version, country, platform );
-elseif event == "user_data_enum" then
-    sqlstr = sqlstr..GetSQLBasisString( "value", "userdata", version, country, platform );
-    sqlstr = sqlstr..[[ and "name"=$5::varchar ]];
-elseif event == "user_data_enums" then
-    sqlstr = sqlstr..GetSQLBasisString( "svalue", "userdata", version, country, platform );
-    sqlstr = sqlstr..[[ and "name"=$5::varchar ]];
-elseif event == "user_data_coin" then
-    sqlstr = sqlstr..GetSQLCoinString();
-end
+    local ex_option = [[  and "page"=$5::varchar ]];
+    sqlstr = sqlstr..GetSQLBasisString( "action", "uistats", version, country, platform, ex_option );
 
-if event ~= "user_data_coin" then
-    sqlstr = sqlstr..[[ group by x ]];
-    sqlstr = sqlstr..[[ order by x ]];
+elseif event == "level_stats" then
+    local ex_option = [[ and "mode"=$5::varchar ]];
+    sqlstr = sqlstr..GetSQLBasisString( param1, "levelstats", version, country, platform, ex_option );
+
+elseif event == "level_car_stats" then
+    sqlstr = sqlstr..GetSQLBasisString( param1, "levelstats", version, country, platform, "" );
+
+elseif event == "user_stats" then
+    version = "ALL";
+    sqlstr = sqlstr..GetSQLBasisString( param0, "userinfo", version, country, platform, "" );
+
+elseif event == "user_data_enum" then
+    local ex_option = [[ and "name"=$5::varchar ]]
+    sqlstr = sqlstr..GetSQLBasisString( "value", "userdata", version, country, platform, ex_option );
+
+elseif event == "user_data_enums" then
+    local ex_option = [[ and "name"=$5::varchar ]];
+    sqlstr = sqlstr..GetSQLBasisString( "svalue", "userdata", version, country, platform, ex_option );
+    
+elseif event == "user_data_coin" then
+    sqlstr = sqlstr..GetSQLCoinString( "","", version, country, platform );
 end
 
 local res = conn:execParams(sqlstr, version, country, date, platform, param0, param1 );
 if res:status() ~= pgsql.PGRES_TUPLES_OK then
-    log:write( res:status());
- log:write( "getdata 59:\n"..res:errorMessage().."\n" );
+    log:write( "getdata 57:\n"..res:errorMessage().."\n" );
 end
-
 
 if event ~= "user_data_coin" then
     for i = 1, res:ntuples() do

@@ -240,9 +240,10 @@
           data:{},
           contentType:"application/json",
           complete: function( jqXHR, textStatus ){
-            enumCountry = JSON.parse(jqXHR.responseText).country;
+            // {"CountryCode",  "version",  "Platform" };
+            enumCountry = JSON.parse(jqXHR.responseText).CountryCode;
             enumVersion = JSON.parse(jqXHR.responseText).version;
-            enumPlatform = JSON.parse(jqXHR.responseText).platform;
+            enumPlatform = JSON.parse(jqXHR.responseText).Platform;
             changecountry();
             changeversion();
             changetype();

@@ -4,51 +4,27 @@ mg.write("Content-Type: text/json\r\n")
 mg.write("Cache-Control: no-cache\r\n")
 mg.write("\r\n")
 
-DEBUG = false;
-local country = {};
-local version = {};
-local platform = {};
 local conn = pgsql.connectdb(conninfo);
-
-local res = conn:exec([[
-    select distinct "CountryCode" as id  from "playfab"."userinfo" 
-    order by "id"
-]]);
-for i = 1, res:ntuples() do
-    country[i] = res[i].id;
-end
-
-res = conn:exec([[
-    select distinct "version" as id from "playfab"."userdata" 
-    order by "id"
-]])
-for i = 1, res:ntuples() do
-    version[i] = res[i].id;
-end
-
-res = conn:exec([[
-    select distinct "Platform" as id from "playfab"."userinfo" 
-    order by "id"
-]])
-for i = 1, res:ntuples() do
-    platform[i] = res[i].id;
-end
-
+if conn:status()  ~= pgsql.CONNECTION_OK then
+    log:write( "getoption 6:\n"..conn:errorMessage().."\n" );
+  end
 
 local data = {};
-data.country = country;
-data.version = version;
-data.platform = platform;
-local jsonStr = tostring(json:encode( data ));
 
-if DEBUG then
-    if conn:status()  ~= pgsql.CONNECTION_OK then
-        mg.write(json.encode( debuginfo ));
-    else
-        mg.write(json.encode( conn:errorMessage()));
+for i = 1, #SQL_OPTION do
+    local sqlstr = "select distinct \""..SQL_OPTION[i].."\" as id from \"playfab\".\""..SQL_OPTION_FROM_TABLE[i].."\" order by \"id\"";
+    local res = conn:exec(sqlstr);
+    if res:status() ~= pgsql.PGRES_TUPLES_OK then
+        log:write( "getoption 24:\n"..res:errorMessage().."\n" );
     end
-else
-    mg.write( jsonStr )
+    
+    data[SQL_OPTION[i]] = {};
+    for j = 1, res:ntuples() do
+        data[SQL_OPTION[i]][j] = res[j].id;
+    end
 end
 
+local jsonStr = tostring(json:encode( data ));
+mg.write( jsonStr )
 conn:finish()
+return

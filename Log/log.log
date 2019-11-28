@@ -1,0 +1,5 @@
+7getdata 59:
+ERROR:  syntax error at or near "group"
+LINE 1:  group by x  order by x 
+         ^
+
